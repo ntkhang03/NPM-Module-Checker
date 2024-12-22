@@ -2,7 +2,7 @@
 	"name": "npm-module-checker",
 	"displayName": "NPM Module Checker",
 	"description": "A VSCode extension to check and fix missing npm packages or modules/files in your project.",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "ntkhang03",
 	"engines": {
 		"vscode": "^1.75.0"
@@ -156,51 +156,51 @@
 				"npmModuleChecker.packageInstalledGlobalSeverity": {
 					"type": "string",
 					"enum": [
-						"error",
-						"warning",
-						"info"
+						"Error",
+						"Warning",
+						"Info"
 					],
-					"default": "error",
+					"default": "Warning",
 					"markdownDescription": "Specifies the severity level for cases where a package is used in the project but is **only installed globally**, not in the project dependencies."
 				},
 				"npmModuleChecker.missingPackageDependencySeverity": {
 					"type": "string",
 					"enum": [
-						"error",
-						"warning",
-						"info"
+						"Error",
+						"Warning",
+						"Info"
 					],
-					"default": "error",
+					"default": "Error",
 					"markdownDescription": "Defines the severity level for missing package dependencies and not installed globally and as dev dependency."
 				},
 				"npmModuleChecker.packageInstalledDevDependencySeverity": {
 					"type": "string",
 					"enum": [
-						"error",
-						"warning",
-						"info"
+						"Error",
+						"Warning",
+						"Info"
 					],
-					"default": "warning",
+					"default": "Warning",
 					"markdownDescription": "Sets the severity level for cases where a package is used in the project but is **installed as a dev dependency instead of a regular dependency**."
 				},
 				"npmModuleChecker.missingFileIndexSeverity": {
 					"type": "string",
 					"enum": [
-						"error",
-						"warning",
-						"info"
+						"Error",
+						"Warning",
+						"Info"
 					],
-					"default": "error",
+					"default": "Error",
 					"markdownDescription": "Determines the severity level for missing `index` files in a directory when the directory is imported or required."
 				},
 				"npmModuleChecker.missingFileSeverity": {
 					"type": "string",
 					"enum": [
-						"error",
-						"warning",
-						"info"
+						"Error",
+						"Warning",
+						"Info"
 					],
-					"default": "error",
+					"default": "Error",
 					"markdownDescription": "Indicates the severity level for **missing files or modules** that are expected during imports or requires."
 				}
 			}

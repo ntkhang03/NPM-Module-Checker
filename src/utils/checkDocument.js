@@ -38,18 +38,18 @@ module.exports = function (
     const diagnosticSeverity = {
       packageInstalledGlobal: config.get(
         "packageInstalledGlobalSeverity",
-        "error"
+        "Error"
       ),
       missingPackageDependency: config.get(
         "missingPackageDependencySeverity",
-        "error"
+        "Error"
       ),
       packageInstalledDevDependency: config.get(
         "packageInstalledDevDependencySeverity",
-        "warning"
+        "Warning"
       ),
-      missingFileIndex: config.get("missingFileIndexSeverity", "error"),
-      missingFile: config.get("missingFileSeverity", "error")
+      missingFileIndex: config.get("missingFileIndexSeverity", "Error"),
+      missingFile: config.get("missingFileSeverity", "Error")
     };
 
     if (!enableDiagnostics[document.languageId]) {
@@ -217,7 +217,7 @@ module.exports = function (
                 "install-package-this-project",
                 vscode.DiagnosticSeverity[
                   isGlobalInstalled
-                    ? diagnosticSeverity.packageInstalledGlobal || "Error"
+                    ? diagnosticSeverity.packageInstalledGlobal || "Warning"
                     : diagnosticSeverity.packageInstalledDevDependency ||
                       "Warning"
                 ],
@@ -231,7 +231,7 @@ module.exports = function (
               createDiagnostic(
                 range,
                 modulePath,
-                `Package "${modulePath}" not installed in this project's dependencies, devDependencies and not found in global node_modules.`,
+                `Package "${modulePath}" is not installed in this project's dependencies, devDependencies and globally.`,
                 "install-package-global",
                 vscode.DiagnosticSeverity[
                   diagnosticSeverity.missingPackageDependency || "Error"
