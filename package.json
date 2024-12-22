@@ -1,0 +1,223 @@
+{
+	"name": "npm-module-checker",
+	"displayName": "NPM Module Checker",
+	"description": "A VSCode extension to check and fix missing npm packages or modules/files in your project.",
+	"version": "1.0.0",
+	"publisher": "ntkhang03",
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"icon": "images/icon.png",
+	"main": "./out/extension.js",
+	"scripts": {
+		"package": "vsce package",
+		"build": "node esbuild.config.js"
+	},
+	"dependencies": {
+		"child_process": "^1.0.2",
+		"fs": "^0.0.1-security",
+		"fs-extra": "^10.1.0",
+		"path": "^0.12.7"
+	},
+	"devDependencies": {
+		"esbuild": "0.24.2",
+		"vsce": "^2.6.0",
+		"webpack": "^5.97.1",
+		"webpack-cli": "^6.0.1",
+		"webpack-node-externals": "^3.0.0"
+	},
+	"contributes": {
+		"languages": [
+			{
+				"id": "javascript",
+				"aliases": [
+					"JavaScript",
+					"js"
+				],
+				"extensions": [
+					".js",
+					".cjs",
+					".mjs"
+				]
+			},
+			{
+				"id": "typescript",
+				"aliases": [
+					"TypeScript",
+					"ts"
+				],
+				"extensions": [
+					".ts",
+					".cts"
+				]
+			},
+			{
+				"id": "javascriptreact",
+				"aliases": [
+					"JavaScript React",
+					"jsx"
+				],
+				"extensions": [
+					".jsx"
+				]
+			},
+			{
+				"id": "typescriptreact",
+				"aliases": [
+					"TypeScript React",
+					"tsx"
+				],
+				"extensions": [
+					".tsx"
+				]
+			}
+		],
+		"commands": [
+			{
+				"command": "npm-module-checker.scanMissingPackagesInFolder",
+				"title": "Scan missing package in this folder"
+			},
+			{
+				"command": "npm-module-checker.scanMissingModulesInFolder",
+				"title": "Scan missing module in this folder"
+			},
+			{
+				"command": "npm-module-checker.scanMissingPackagesAndModulesInFolder",
+				"title": "Scan missing package and module in this folder"
+			},
+			{
+				"command": "npm-module-checker.validateIgnorePatterns",
+				"title": "NPM Module Checker: Validate ignore patterns"
+			}
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "npm-module-checker.scanMissingPackagesInFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"group": "npm-module-checker"
+				},
+				{
+					"command": "npm-module-checker.scanMissingModulesInFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"group": "npm-module-checker"
+				},
+				{
+					"command": "npm-module-checker.scanMissingPackagesAndModulesInFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"group": "npm-module-checker"
+				}
+			]
+		},
+		"configuration": {
+			"type": "object",
+			"properties": {
+				"npmModuleChecker.ignoreFilesOrFolders": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "List of file or folder patterns to ignore during the check (supports regex, contained in `/.../`), e.g. `[\"node_modules\", \"dist\", \"build\", \"/*.test.js/\"]`."
+				},
+				"npmModuleChecker.checkInsideStrings": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Check for missing modules `inside strings`."
+				},
+				"npmModuleChecker.enableDiagnosticsJavascript": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable diagnostics for `JavaScript` files."
+				},
+				"npmModuleChecker.enableDiagnosticsTypescript": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable diagnostics for `TypeScript` files."
+				},
+				"npmModuleChecker.enableDiagnosticsJavascriptreact": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable diagnostics for `JavaScript React` files."
+				},
+				"npmModuleChecker.enableDiagnosticsTypescriptreact": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable diagnostics for `TypeScript React` files."
+				},
+				"npmModuleChecker.customIgnorePackages": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "Custom packages to ignore during the check."
+				},
+				"npmModuleChecker.packageInstalledGlobalSeverity": {
+					"type": "string",
+					"enum": [
+						"error",
+						"warning",
+						"info"
+					],
+					"default": "error",
+					"markdownDescription": "Specifies the severity level for cases where a package is used in the project but is **only installed globally**, not in the project dependencies."
+				},
+				"npmModuleChecker.missingPackageDependencySeverity": {
+					"type": "string",
+					"enum": [
+						"error",
+						"warning",
+						"info"
+					],
+					"default": "error",
+					"markdownDescription": "Defines the severity level for missing package dependencies and not installed globally and as dev dependency."
+				},
+				"npmModuleChecker.packageInstalledDevDependencySeverity": {
+					"type": "string",
+					"enum": [
+						"error",
+						"warning",
+						"info"
+					],
+					"default": "warning",
+					"markdownDescription": "Sets the severity level for cases where a package is used in the project but is **installed as a dev dependency instead of a regular dependency**."
+				},
+				"npmModuleChecker.missingFileIndexSeverity": {
+					"type": "string",
+					"enum": [
+						"error",
+						"warning",
+						"info"
+					],
+					"default": "error",
+					"markdownDescription": "Determines the severity level for missing `index` files in a directory when the directory is imported or required."
+				},
+				"npmModuleChecker.missingFileSeverity": {
+					"type": "string",
+					"enum": [
+						"error",
+						"warning",
+						"info"
+					],
+					"default": "error",
+					"markdownDescription": "Indicates the severity level for **missing files or modules** that are expected during imports or requires."
+				}
+			}
+		}
+	},
+	"activationEvents": [
+		"onLanguage:javascript",
+		"onLanguage:typescript",
+		"onLanguage:javascriptreact",
+		"onLanguage:typescriptreact"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ntkhang03/NPM-Module-Checker.git"
+	},
+	"bugs": {
+		"url": "https://github.com/ntkhang03/NPM-Module-Checker/issues"
+	},
+	"homepage": "https://github.com/ntkhang03/NPM-Module-Checker"
+}
