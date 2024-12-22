@@ -38,18 +38,24 @@ module.exports = function (
     const diagnosticSeverity = {
       packageInstalledGlobal: config.get(
         "packageInstalledGlobalSeverity",
-        "Error"
+        config.inspect("packageInstalledGlobalSeverity").defaultValue
       ),
       missingPackageDependency: config.get(
         "missingPackageDependencySeverity",
-        "Error"
+        config.inspect("missingPackageDependencySeverity").defaultValue
       ),
       packageInstalledDevDependency: config.get(
         "packageInstalledDevDependencySeverity",
-        "Warning"
+        config.inspect("packageInstalledDevDependencySeverity").defaultValue
       ),
-      missingFileIndex: config.get("missingFileIndexSeverity", "Error"),
-      missingFile: config.get("missingFileSeverity", "Error")
+      missingFileIndex: config.get(
+        "missingFileIndexSeverity",
+        config.inspect("missingFileIndexSeverity").defaultValue
+      ),
+      missingFile: config.get(
+        "missingFileSeverity",
+        config.inspect("missingFileSeverity").defaultValue
+      )
     };
 
     if (!enableDiagnostics[document.languageId]) {
