@@ -1,5 +1,5 @@
 const vscode = require("vscode");
-const { outputChannel, showOutput } = require("./showOutput");
+const { outputChannel, showOutput } = require("./outputChannel");
 
 function handleError(message, error) {
   showOutput(`\n[Error]: ${message}`);

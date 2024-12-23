@@ -1,4 +1,3 @@
-const { showOutput } = require("./showOutput.js");
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
@@ -6,6 +5,8 @@ const checkGlobalPackage = require("./checkGlobalPackage.js");
 const findNearestPackageJson = require("./findNearestPackageJson.js");
 const createDiagnostic = require("./createDiagnostic.js");
 const builtInModules = require("module").builtinModules;
+const { regexCheckImport } = require("./constants.js");
+const { showOutput } = require("./outputChannel.js");
 
 const ignorePackages = [
   "module",
@@ -59,11 +60,13 @@ module.exports = function (
     };
 
     if (!enableDiagnostics[document.languageId]) {
+      diagnosticCollection.delete(document.uri);
       return;
     }
 
     const documentPath = document.fileName;
     if (
+      // Check if the file is in the ignoreFilesOrFolders list
       ignoreFilesOrFolders.some((pattern) => {
         if (!pattern.startsWith("/")) {
           if (!pattern.includes(".")) {
@@ -95,11 +98,8 @@ module.exports = function (
     const diagnostics = [];
     const text = document.getText();
 
-    const regex =
-      /(?:require\s*\(\s*["'`]([^"'`]+)["'`]\s*\)|import(?:\s+[\w*{},\s"'`]*from)?\s*["'`]([^"'`]+)["'`]\s*|import\s*\(\s*["'`]([^"'`]+)["'`]\s*\))/g;
-
     let match;
-    while ((match = regex.exec(text))) {
+    while ((match = regexCheckImport.exec(text))) {
       const thisLineText =
         document.lineAt(document.positionAt(match.index).line).text || "";
       if (

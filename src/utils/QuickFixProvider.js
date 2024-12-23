@@ -7,12 +7,14 @@ class QuickFixProvider {
   }
 
   provideCodeActions(document, range, context) {
+    console.log("document name", document.fileName);
     const diagnostics = context.diagnostics;
 
     // Các actions sẽ được gom lại trong 1 mảng, mỗi mảng có các hành động phù hợp với từng diagnostic
     const actions = [];
 
     diagnostics.forEach((diagnostic) => {
+      console.log(diagnostic);
       if (diagnostic.code === "create-file") {
         actions.push(
           this.createFileQuickFix(diagnostic.packageNameOrFilePath, document),
@@ -21,6 +23,10 @@ class QuickFixProvider {
       } else if (diagnostic.code === "install-package-global") {
         actions.push(
           this.installPackageQuickFix(
+            diagnostic.packageNameOrFilePath,
+            document
+          ),
+          this.installPackageAsDevDependencyQuickFix(
             diagnostic.packageNameOrFilePath,
             document
           ),
@@ -37,8 +43,20 @@ class QuickFixProvider {
             diagnostic.packageNameOrFilePath,
             document
           ),
+          this.installPackageAsDevDependencyQuickFix(
+            diagnostic.packageNameOrFilePath,
+            document
+          ),
           this.installMissingPackagesFix(document),
           this.installMissingPackagesGloballyFix(document)
+        );
+      } else if (diagnostic.code === "uninstall-package") {
+        actions.push(
+          this.uninstallPackageQuickFix(
+            diagnostic.packageNameOrFilePath,
+            document
+          ),
+          this.uninstallPackagesUnusedFix(document)
         );
       }
     });
@@ -86,6 +104,19 @@ class QuickFixProvider {
     return fix;
   }
 
+  installPackageAsDevDependencyQuickFix(packageName, document) {
+    const fix = new vscode.CodeAction(
+      `Install "${packageName}" package as devDependency in this project`,
+      vscode.CodeActionKind.QuickFix
+    );
+    fix.command = {
+      title: "Install package as devDependency",
+      command: "npm-module-checker.installPackageAsDevDependency",
+      arguments: [packageName, document]
+    };
+    return fix;
+  }
+
   installPackageGlobalQuickFix(packageName, document) {
     const fix = new vscode.CodeAction(
       `Install "${packageName}" package globally`,
@@ -120,6 +151,32 @@ class QuickFixProvider {
     fix.command = {
       title: "Fix all problems (install missing packages) globally",
       command: "npm-module-checker.installMissingPackagesGloballyFix",
+      arguments: [document]
+    };
+    return fix;
+  }
+
+  uninstallPackageQuickFix(packageName, document) {
+    const fix = new vscode.CodeAction(
+      `Uninstall "${packageName}" package`,
+      vscode.CodeActionKind.QuickFix
+    );
+    fix.command = {
+      title: "Uninstall package",
+      command: "npm-module-checker.uninstallPackage",
+      arguments: [packageName, document]
+    };
+    return fix;
+  }
+
+  uninstallPackagesUnusedFix(document) {
+    const fix = new vscode.CodeAction(
+      "Fix all problems (uninstall unused packages)",
+      vscode.CodeActionKind.QuickFix
+    );
+    fix.command = {
+      title: "Fix all problems (uninstall unused packages)",
+      command: "npm-module-checker.uninstallAllUnusedPackages",
       arguments: [document]
     };
     return fix;

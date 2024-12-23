@@ -1,8 +1,7 @@
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
-
-const extJs = ["js", "ts", "jsx", "tsx", "mjs", "cjs"];
+const { extJs } = require("./constants.js");
 
 async function scanFolder(checkDocument, folder, diagnosticsByFile) {
   const files = fs.readdirSync(folder);
