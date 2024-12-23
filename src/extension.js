@@ -5,18 +5,18 @@ const { execSync } = require("child_process");
 
 const QuickFixProvider = require("./utils/QuickFixProvider.js");
 const initCheckDocument = require("./utils/checkDocument.js");
-const { outputChannel, showOutput } = require("./utils/outputChannel.js");
+const { outputChannel } = require("./utils/outputChannel.js");
 const handleError = require("./utils/handleError.js");
 const checkDocumentAllTabs = require("./utils/checkDocumentAllTabs.js");
 const executeCommand = require("./utils/executeCommand.js");
 const processDiagnostics = require("./utils/processDiagnostics.js");
 const checkUnusedPackagesInPackageJson = require("./utils/checkUnusedPackagesInPackageJson.js");
-const generateFolderCommands = require("./commands/generateFolderCommands.js");
 const checkUnusedPackagesCommand = require("./commands/checkUnusedPackagesCommand.js");
 const validateIgnorePatternsCommand = require("./commands/validateIgnorePatternsCommand.js");
 const registerCommands = require("./commands/registerCommands.js");
 
 let globalNodeModulesPath;
+const debounceTimers = {};
 const diagnosticsByFile = new Map();
 const diagnosticCollection =
   vscode.languages.createDiagnosticCollection("npm-module-checker");
@@ -38,18 +38,21 @@ function activate(context) {
 
   const subscriptions = [
     vscode.workspace.onDidOpenTextDocument((doc) => {
-      checkDocument(doc, true);
-      console.log(path.basename(doc.fileName));
+      checkDocument(debounceTimers, doc, true);
       if (path.basename(doc.fileName) === "package.json") {
         checkUnusedPackagesInPackageJson(doc, diagnosticCollection);
       }
     }),
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (path.basename(e.document.fileName) === "package.json") {
-        checkDocumentAllTabs(checkDocument, diagnosticCollection);
+        checkDocumentAllTabs(
+          debounceTimers,
+          checkDocument,
+          diagnosticCollection
+        );
         checkUnusedPackagesInPackageJson(e.document, diagnosticCollection);
       } else {
-        checkDocument(e.document, true);
+        checkDocument(debounceTimers, e.document, true);
       }
     }),
     vscode.workspace.onDidCloseTextDocument((doc) =>
@@ -71,6 +74,7 @@ function activate(context) {
       checkUnusedPackagesCommand
     ),
     ...registerCommands(
+      debounceTimers,
       createFileCommand,
       diagnosticsByFile,
       checkDocument,
@@ -82,12 +86,12 @@ function activate(context) {
   ];
 
   context.subscriptions.push(...subscriptions);
-  checkDocumentAllTabs(checkDocument, diagnosticCollection);
+  checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 
   // listen when setting changes (npmModuleChecker)
   vscode.workspace.onDidChangeConfiguration((e) => {
     if (e.affectsConfiguration("npmModuleChecker")) {
-      checkDocumentAllTabs(checkDocument, diagnosticCollection);
+      checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
     }
   });
 }
@@ -100,7 +104,7 @@ function createFileCommand(filePath) {
     (issue) => fs.writeFileSync(issue.packageNameOrFilePath, "", "utf-8"),
     (issue) => `Cannot create file: ${issue.packageNameOrFilePath}`
   );
-  checkDocumentAllTabs(checkDocument, diagnosticCollection);
+  checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 }
 
 function installPackageCommand(packageName, document, args = "") {
@@ -115,7 +119,7 @@ function installPackageCommand(packageName, document, args = "") {
       ),
     (error) => handleError(`Cannot install package "${packageName}"`, error)
   );
-  checkDocumentAllTabs(checkDocument, diagnosticCollection);
+  checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 }
 
 function installMissingPackagesFixCommand(document, global = false) {
@@ -138,7 +142,7 @@ function installMissingPackagesFixCommand(document, global = false) {
     (error) =>
       handleError(`Cannot install packages: ${packages.join(", ")}`, error)
   );
-  checkDocumentAllTabs(checkDocument, diagnosticCollection);
+  checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 }
 
 function uninstallPackageCommand(packageName, document) {
@@ -153,7 +157,7 @@ function uninstallPackageCommand(packageName, document) {
       ),
     (error) => handleError(`Cannot uninstall package "${packageName}"`, error)
   );
-  checkDocumentAllTabs(checkDocument, diagnosticCollection);
+  checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 }
 
 function uninstallAllUnusedPackagesCommand(document) {
@@ -174,7 +178,7 @@ function uninstallAllUnusedPackagesCommand(document) {
     (error) =>
       handleError(`Cannot uninstall packages: ${packages.join(", ")}`, error)
   );
-  checkDocumentAllTabs(checkDocument, diagnosticCollection);
+  checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 }
 
 function deactivate() {}

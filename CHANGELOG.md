@@ -1,8 +1,14 @@
+## v1.0.4
+### 🚀 Features
+- Added `debounce` to prevent calling `checkDocument` and `checkDocumentAllTabs` functions repeatedly.
+- Added setting `npmModuleChecker.delayTimeForCheckDocumentAllTabsCall`: Delay in milliseconds before checking all open tabs when a document is opened or changed.
+- Added setting `npmModuleChecker.delayForCheckDocumentCall`: Delay in milliseconds before checking a document for missing packages or modules.
+
 ## v1.0.3
 ### 🚀 Features
 - Added context menu action **Check for unused packages**: Right-click on a folder or file in the Explorer view to check for packages that are installed in the project but not used.
-- Add setting for enable or disable automatic checking for unused packages when opening `package.json` file.
-- Add setting set the severity level for the diagnostic when unused packages are found.
+- Added setting for enable or disable automatic checking for unused packages when opening `package.json` file.
+- Added setting set the severity level for the diagnostic when unused packages are found.
 
 ## v1.0.2
 ### 🚀 Features

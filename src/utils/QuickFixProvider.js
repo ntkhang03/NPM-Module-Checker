@@ -7,14 +7,12 @@ class QuickFixProvider {
   }
 
   provideCodeActions(document, range, context) {
-    console.log("document name", document.fileName);
     const diagnostics = context.diagnostics;
 
     // Các actions sẽ được gom lại trong 1 mảng, mỗi mảng có các hành động phù hợp với từng diagnostic
     const actions = [];
 
     diagnostics.forEach((diagnostic) => {
-      console.log(diagnostic);
       if (diagnostic.code === "create-file") {
         actions.push(
           this.createFileQuickFix(diagnostic.packageNameOrFilePath, document),

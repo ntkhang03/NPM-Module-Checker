@@ -6,6 +6,7 @@ const generateFolderCommands = require("./generateFolderCommands.js");
 const handleError = require("../utils/handleError.js");
 
 function registerCommands(
+  debounceTimers,
   createFileCommand,
   diagnosticsByFile,
   checkDocument,
@@ -63,7 +64,12 @@ function registerCommands(
       "npm-module-checker.uninstallAllUnusedPackages",
       (document) => uninstallAllUnusedPackagesCommand(document)
     ),
-    ...generateFolderCommands(checkDocument, showOutput, handleError)
+    ...generateFolderCommands(
+      debounceTimers,
+      checkDocument,
+      showOutput,
+      handleError
+    )
   ];
 }
 

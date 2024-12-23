@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const generateRegexCheckImport = require("./generateRegexCheckImport");
+const generateRegexCheckImport = require("./generateRegexCheckImport.js");
+const { extJs } = require("./constants.js");
 
 function scanDependenciesUsed(dependencies, dir, usedPackages = {}) {
   const files = fs.readdirSync(dir);
@@ -8,7 +9,7 @@ function scanDependenciesUsed(dependencies, dir, usedPackages = {}) {
     const filePath = path.join(dir, file);
     if (fs.lstatSync(filePath).isDirectory()) {
       scanDependenciesUsed(dependencies, filePath, usedPackages);
-    } else if (filePath.endsWith(".js") || filePath.endsWith(".ts")) {
+    } else if (extJs.includes(file.split(".").pop())) {
       const codeSnippet = fs.readFileSync(filePath, "utf-8");
       const regex = generateRegexCheckImport(dependencies);
       const matches = [...codeSnippet.matchAll(regex)].map((match) => match[0]);

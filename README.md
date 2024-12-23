@@ -102,6 +102,8 @@ You can customize the behavior of the extension through the following settings:
 - `npmModuleChecker.missingFileSeverity`: Severity level for missing files.
 - `npmModuleChecker.enableUnusedPackageCheck`: Enable or disable automatic checking for unused packages when opening `package.json` file.
 - `npmModuleChecker.unusedPackageSeverity`: Severity level for the diagnostic when unused packages are found.
+- `npmModuleChecker.delayTimeForCheckDocumentAllTabsCall`: Delay in milliseconds before checking all open tabs when a document is opened or changed.
+- `npmModuleChecker.delayForCheckDocumentCall`: Delay in milliseconds before checking a document for missing packages or modules.
 
 ## 📸 Screenshots
 

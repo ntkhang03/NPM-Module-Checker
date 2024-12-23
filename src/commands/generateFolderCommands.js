@@ -6,7 +6,12 @@ const generateDiagnosticsOutput = require("../utils/generateDiagnosticsOutput.js
 const scanFolder = require("../utils/scanFolder.js");
 const executeCommand = require("../utils/executeCommand.js");
 
-function generateFolderCommands(checkDocument, showOutput, handleError) {
+function generateFolderCommands(
+  debounceTimers,
+  checkDocument,
+  showOutput,
+  handleError
+) {
   const commands = [
     {
       name: "scanMissingPackagesInFolder",
@@ -37,7 +42,12 @@ function generateFolderCommands(checkDocument, showOutput, handleError) {
         }
 
         const diagnosticsRoot = new Map();
-        await scanFolder(checkDocument, folderPath.fsPath, diagnosticsRoot);
+        await scanFolder(
+          debounceTimers,
+          checkDocument,
+          folderPath.fsPath,
+          diagnosticsRoot
+        );
         const diagnostics = new Map();
         const keys = Array.from(diagnosticsRoot.keys());
         keys.forEach((key) => {
