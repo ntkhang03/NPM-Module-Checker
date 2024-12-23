@@ -19,6 +19,8 @@ NPM Module Checker is a VSCode extension that helps you identify and fix missing
 - Provide quick fixes to **`install missing packages`** or **`create missing modules/files`**.
 - **`Scan entire`** folders or projects for missing packages and modules/files.
 - **`Log detailed information`** about issues found and actions taken.
+- **`Check for unused packages`**: Right-click on a folder or file in the Explorer view to check for packages that are installed in the project but not used.
+- And more features to **customize** the extension to your needs.
 
 ## 📥 Installation
 
@@ -98,6 +100,8 @@ You can customize the behavior of the extension through the following settings:
 - `npmModuleChecker.packageInstalledDevDependencySeverity`: Severity level for packages installed as dev dependencies.
 - `npmModuleChecker.missingFileIndexSeverity`: Severity level for missing index files.
 - `npmModuleChecker.missingFileSeverity`: Severity level for missing files.
+- `npmModuleChecker.enableUnusedPackageCheck`: Enable or disable automatic checking for unused packages when opening `package.json` file.
+- `npmModuleChecker.unusedPackageSeverity`: Severity level for the diagnostic when unused packages are found.
 
 ## 📸 Screenshots
 

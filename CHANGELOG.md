@@ -1,4 +1,18 @@
-## v1.0
+## v1.0.3
+### 🚀 Features
+- Added context menu action **Check for unused packages**: Right-click on a folder or file in the Explorer view to check for packages that are installed in the project but not used.
+- Add setting for enable or disable automatic checking for unused packages when opening `package.json` file.
+- Add setting set the severity level for the diagnostic when unused packages are found.
+
+## v1.0.2
+### 🚀 Features
+- Replace hardcoded default severity values with `config.inspect(...).defaultValue` for better maintainability.
+
+## v1.0.1
+### 🚀 Features
+- Standardize severity level capitalization (`error` -> `Error`, `warning` -> `Warning`, `info` -> `Info`)
+
+## v1.0.0
 ### 🚀 Features
 - Detect missing **npm packages** and **modules/files** in your project.
 - Provide quick fixes to **install missing packages** or **create missing modules/files**.

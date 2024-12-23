@@ -2,7 +2,7 @@
 	"name": "npm-module-checker",
 	"displayName": "NPM Module Checker",
 	"description": "A VSCode extension to check and fix missing npm packages or modules/files in your project.",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"publisher": "ntkhang03",
 	"engines": {
 		"vscode": "^1.75.0"
@@ -88,6 +88,10 @@
 			{
 				"command": "npm-module-checker.validateIgnorePatterns",
 				"title": "NPM Module Checker: Validate ignore patterns"
+			},
+			{
+				"command": "npm-module-checker.checkUnusedPackages",
+				"title": "Check for Unused Packages"
 			}
 		],
 		"menus": {
@@ -104,6 +108,11 @@
 				},
 				{
 					"command": "npm-module-checker.scanMissingPackagesAndModulesInFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"group": "npm-module-checker"
+				},
+				{
+					"command": "npm-module-checker.checkUnusedPackages",
 					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
 					"group": "npm-module-checker"
 				}
@@ -152,6 +161,11 @@
 					},
 					"default": [],
 					"markdownDescription": "Custom packages to ignore during the check."
+				},
+				"npmModuleChecker.enableUnusedPackageCheck": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable or disable automatic checking for unused packages when opening `package.json` file."
 				},
 				"npmModuleChecker.packageInstalledGlobalSeverity": {
 					"type": "string",
@@ -202,6 +216,16 @@
 					],
 					"default": "Error",
 					"markdownDescription": "Indicates the severity level for **missing files or modules** that are expected during imports or requires."
+				},
+				"npmModuleChecker.unusedPackageSeverity": {
+					"type": "string",
+					"enum": [
+						"Error",
+						"Warning",
+						"Info"
+					],
+					"default": "Warning",
+					"markdownDescription": "Sets the severity level for **unused packages** in the `package.json` file."
 				}
 			}
 		}
@@ -210,7 +234,8 @@
 		"onLanguage:javascript",
 		"onLanguage:typescript",
 		"onLanguage:javascriptreact",
-		"onLanguage:typescriptreact"
+		"onLanguage:typescriptreact",
+		"onLanguage:json"
 	],
 	"repository": {
 		"type": "git",
