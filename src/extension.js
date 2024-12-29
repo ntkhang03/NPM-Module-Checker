@@ -59,7 +59,7 @@ function activate(context) {
       diagnosticCollection.delete(doc.uri)
     ),
     vscode.languages.registerCodeActionsProvider(
-      ["javascript", "typescript", "json"],
+      ["javascript", "typescript", "json", "vue"],
       new QuickFixProvider(),
       {
         providedCodeActionKinds: QuickFixProvider.providedCodeActionKinds
@@ -109,9 +109,10 @@ function createFileCommand(filePath) {
 
 function installPackageCommand(packageName, document, args = "") {
   const command = `npm install ${args} ${packageName}`.replace(/\s+/g, " ");
+
   executeCommand(
     command,
-    global ? undefined : path.dirname(document.fileName),
+    path.dirname(document.fileName),
     `Installing ${packageName}...`,
     () =>
       vscode.window.showInformationMessage(
@@ -122,18 +123,20 @@ function installPackageCommand(packageName, document, args = "") {
   checkDocumentAllTabs(debounceTimers, checkDocument, diagnosticCollection);
 }
 
-function installMissingPackagesFixCommand(document, global = false) {
+function installMissingPackagesFixCommand(document, isGlobal = false) {
   const diagnostics = diagnosticsByFile.get(document.uri) || [];
   const packages = diagnostics
     .filter((issue) => issue.code.startsWith("install-package"))
     .map((issue) => issue.packageNameOrFilePath);
-  const command = global
+  const command = isGlobal
     ? `npm install -g ${packages.join(" ")}`
     : `npm install ${packages.join(" ")}`;
 
+  const cwd = isGlobal ? undefined : path.dirname(document.fileName);
+
   executeCommand(
     command,
-    global ? undefined : path.dirname(document.fileName),
+    cwd,
     `Installing ${packages.length} missing packages...`,
     () =>
       vscode.window.showInformationMessage(

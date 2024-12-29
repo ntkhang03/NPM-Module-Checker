@@ -29,7 +29,7 @@ module.exports = function (
     return new Promise((resolve) => {
       debounce(
         debounceTimers,
-        "checkDocument",
+        `checkDocument_${document.uri.path}`,
         () => {
           const config = vscode.workspace.getConfiguration("npmModuleChecker");
           const customIgnorePackages = config.get("customIgnorePackages", []);
@@ -37,15 +37,25 @@ module.exports = function (
           const ignoreFilesOrFolders = config.get("ignoreFilesOrFolders", []);
 
           const enableDiagnostics = {
-            javascript: config.get("enableDiagnosticsJavascript", true),
-            typescript: config.get("enableDiagnosticsTypescript", true),
+            javascript: config.get(
+              "enableDiagnosticsJavascript",
+              config.inspect("enableDiagnosticsJavascript").defaultValue
+            ),
+            typescript: config.get(
+              "enableDiagnosticsTypescript",
+              config.inspect("enableDiagnosticsTypescript").defaultValue
+            ),
             javascriptreact: config.get(
               "enableDiagnosticsJavascriptreact",
-              true
+              config.inspect("enableDiagnosticsJavascriptreact").defaultValue
             ),
             typescriptreact: config.get(
               "enableDiagnosticsTypescriptreact",
-              true
+              config.inspect("enableDiagnosticsTypescriptreact").defaultValue
+            ),
+            vue: config.get(
+              "enableDiagnosticsVue",
+              config.inspect("enableDiagnosticsVue").defaultValue
             )
           };
 
@@ -113,166 +123,170 @@ module.exports = function (
 
           const diagnostics = [];
           const text = document.getText();
+          const lines = text.split("\n");
 
-          let match;
-          while ((match = regexCheckImport.exec(text))) {
-            const thisLineText =
-              document.lineAt(document.positionAt(match.index).line).text || "";
-            if (
-              ["//", "/*", "*"].some((comment) =>
-                thisLineText.trim().startsWith(comment)
-              )
-            ) {
-              continue;
-            }
-
-            if (!checkInsideStrings) {
-              const beforeMatch = text.slice(0, match.index);
-              const afterMatch = text.slice(match.index + match[0].length);
-              const isInsideString =
-                (beforeMatch.match(/"/g) || []).length % 2 !== 0 ||
-                (beforeMatch.match(/'/g) || []).length % 2 !== 0 ||
-                (beforeMatch.match(/`/g) || []).length % 2 !== 0 ||
-                (afterMatch.match(/"/g) || []).length % 2 !== 0 ||
-                (afterMatch.match(/'/g) || []).length % 2 !== 0 ||
-                (afterMatch.match(/`/g) || []).length % 2 !== 0;
-
-              if (isInsideString) {
+          lines.forEach((lineText, lineNumber) => {
+            let match;
+            while ((match = regexCheckImport.exec(lineText))) {
+              const thisLineText = lineText || "";
+              if (
+                ["//", "/*", "*"].some((comment) =>
+                  thisLineText.trim().startsWith(comment)
+                )
+              ) {
                 continue;
               }
-            }
 
-            const modulePath = match[1] || match[2] || match[3];
-            if (!modulePath) {
-              continue;
-            }
+              if (!checkInsideStrings) {
+                const beforeMatch = text.slice(0, match.index);
+                const afterMatch = text.slice(match.index + match[0].length);
+                const isInsideString =
+                  (beforeMatch.match(/"/g) || []).length % 2 !== 0 ||
+                  (beforeMatch.match(/'/g) || []).length % 2 !== 0 ||
+                  (beforeMatch.match(/`/g) || []).length % 2 !== 0 ||
+                  (afterMatch.match(/"/g) || []).length % 2 !== 0 ||
+                  (afterMatch.match(/'/g) || []).length % 2 !== 0 ||
+                  (afterMatch.match(/`/g) || []).length % 2 !== 0;
 
-            if (
-              ignorePackages.includes(modulePath) ||
-              customIgnorePackages.includes(modulePath)
-            ) {
-              continue;
-            }
-
-            const startPosInt = match.index + match[0].indexOf(modulePath) - 1;
-            const endPosInt =
-              match.index +
-              match[0].indexOf(modulePath) +
-              modulePath.length +
-              1;
-            const startPos = document.positionAt(startPosInt);
-            const endPos = document.positionAt(endPosInt);
-            const line = document.positionAt(match.index).line;
-
-            const range = new vscode.Range(startPos, endPos);
-
-            const rootPath = findNearestPackageJson(document.fileName);
-            if (!rootPath) {
-              continue;
-            }
-
-            // is file
-            if (modulePath.startsWith(".") || modulePath.startsWith("/")) {
-              let resolvedPath = path.resolve(
-                path.dirname(document.fileName),
-                modulePath
-              );
-              const extensionCurrentFile = path.extname(document.fileName);
-
-              if (
-                fs.existsSync(resolvedPath) &&
-                fs.lstatSync(resolvedPath).isDirectory() &&
-                !fs.existsSync(resolvedPath + "/index" + extensionCurrentFile)
-              ) {
-                diagnostics.push(
-                  createDiagnostic(
-                    range,
-                    resolvedPath + "/index" + extensionCurrentFile,
-                    `Cannot find module 'index${extensionCurrentFile}' from '${resolvedPath}'`,
-                    "create-file",
-                    vscode.DiagnosticSeverity[
-                      diagnosticSeverity.missingFileIndex || "Error"
-                    ],
-                    line,
-                    startPos.character,
-                    endPos.character
-                  )
-                );
-              } else {
-                if (!path.extname(resolvedPath)) {
-                  resolvedPath = resolvedPath + extensionCurrentFile;
-                }
-
-                if (!fs.existsSync(resolvedPath)) {
-                  diagnostics.push(
-                    createDiagnostic(
-                      range,
-                      resolvedPath,
-                      `Cannot find module '${resolvedPath}'`,
-                      "create-file",
-                      vscode.DiagnosticSeverity[
-                        diagnosticSeverity.missingFile || "Error"
-                      ],
-                      line,
-                      startPos.character,
-                      endPos.character
-                    )
-                  );
+                if (isInsideString) {
+                  continue;
                 }
               }
-            } else {
-              const packageJson = JSON.parse(
-                fs.readFileSync(rootPath, "utf-8")
-              );
+
+              const modulePath = match[1] || match[2] || match[3];
+              if (!modulePath) {
+                continue;
+              }
+
               if (
-                !packageJson.dependencies || // Không có dependencies
-                !(modulePath in packageJson.dependencies) // Không có modulePath trong dependencies
+                ignorePackages.includes(modulePath) ||
+                customIgnorePackages.includes(modulePath)
               ) {
-                const isGlobalInstalled = checkGlobalPackage(
-                  globalNodeModulesPath,
+                continue;
+              }
+
+              let startPosInt = match.index + match[0].indexOf(modulePath) - 1;
+              if (match[0].startsWith("import")) {
+                startPosInt = /[`'"]/g.exec(thisLineText).index;
+              }
+              const endPosInt = startPosInt + 1 + modulePath.length + 1;
+              const startPos = document.positionAt(
+                document.offsetAt(new vscode.Position(lineNumber, startPosInt))
+              );
+              const endPos = document.positionAt(
+                document.offsetAt(new vscode.Position(lineNumber, endPosInt))
+              );
+
+              const range = new vscode.Range(startPos, endPos);
+
+              const rootPath = findNearestPackageJson(document.fileName);
+              if (!rootPath) {
+                continue;
+              }
+
+              // is file
+              if (modulePath.startsWith(".") || modulePath.startsWith("/")) {
+                let resolvedPath = path.resolve(
+                  path.dirname(document.fileName),
                   modulePath
                 );
-                const isDevInstalled =
-                  packageJson.devDependencies &&
-                  modulePath in packageJson.devDependencies;
-                if (isGlobalInstalled || isDevInstalled) {
+                const extensionCurrentFile = path.extname(document.fileName);
+
+                if (
+                  fs.existsSync(resolvedPath) &&
+                  fs.lstatSync(resolvedPath).isDirectory() &&
+                  !fs.existsSync(resolvedPath + "/index" + extensionCurrentFile)
+                ) {
                   diagnostics.push(
                     createDiagnostic(
                       range,
-                      modulePath,
-                      `Package "${modulePath}" is not found in this project's dependencies, but is installed ${isGlobalInstalled ? "globally" : "as a dev dependency"}.`,
-                      "install-package-this-project",
+                      resolvedPath + "/index" + extensionCurrentFile,
+                      `Cannot find module 'index${extensionCurrentFile}' from '${resolvedPath}'`,
+                      "create-file",
                       vscode.DiagnosticSeverity[
-                        isGlobalInstalled
-                          ? diagnosticSeverity.packageInstalledGlobal ||
-                            "Warning"
-                          : diagnosticSeverity.packageInstalledDevDependency ||
-                            "Warning"
+                        diagnosticSeverity.missingFileIndex || "Error"
                       ],
-                      line,
+                      lineNumber,
                       startPos.character,
                       endPos.character
                     )
                   );
                 } else {
-                  diagnostics.push(
-                    createDiagnostic(
-                      range,
-                      modulePath,
-                      `Package "${modulePath}" is not installed in this project's dependencies, devDependencies and globally.`,
-                      "install-package-global",
-                      vscode.DiagnosticSeverity[
-                        diagnosticSeverity.missingPackageDependency || "Error"
-                      ],
-                      line,
-                      startPos.character,
-                      endPos.character
-                    )
+                  if (!path.extname(resolvedPath)) {
+                    resolvedPath = resolvedPath + extensionCurrentFile;
+                  }
+
+                  if (!fs.existsSync(resolvedPath)) {
+                    diagnostics.push(
+                      createDiagnostic(
+                        range,
+                        resolvedPath,
+                        `Cannot find module '${resolvedPath}'`,
+                        "create-file",
+                        vscode.DiagnosticSeverity[
+                          diagnosticSeverity.missingFile || "Error"
+                        ],
+                        lineNumber,
+                        startPos.character,
+                        endPos.character
+                      )
+                    );
+                  }
+                }
+              } else {
+                const packageJson = JSON.parse(
+                  fs.readFileSync(rootPath, "utf-8")
+                );
+                if (
+                  !packageJson.dependencies || // Không có dependencies
+                  !(modulePath in packageJson.dependencies) // Không có modulePath trong dependencies
+                ) {
+                  const isGlobalInstalled = checkGlobalPackage(
+                    globalNodeModulesPath,
+                    modulePath
                   );
+                  const isDevInstalled =
+                    packageJson.devDependencies &&
+                    modulePath in packageJson.devDependencies;
+                  if (isGlobalInstalled || isDevInstalled) {
+                    diagnostics.push(
+                      createDiagnostic(
+                        range,
+                        modulePath,
+                        `Package "${modulePath}" is not found in this project's dependencies, but is installed ${isGlobalInstalled ? "globally" : "as a dev dependency"}.`,
+                        "install-package-this-project",
+                        vscode.DiagnosticSeverity[
+                          isGlobalInstalled
+                            ? diagnosticSeverity.packageInstalledGlobal ||
+                              "Warning"
+                            : diagnosticSeverity.packageInstalledDevDependency ||
+                              "Warning"
+                        ],
+                        lineNumber,
+                        startPos.character,
+                        endPos.character
+                      )
+                    );
+                  } else {
+                    diagnostics.push(
+                      createDiagnostic(
+                        range,
+                        modulePath,
+                        `Package "${modulePath}" is not installed in this project's dependencies, devDependencies and globally.`,
+                        "install-package-global",
+                        vscode.DiagnosticSeverity[
+                          diagnosticSeverity.missingPackageDependency || "Error"
+                        ],
+                        lineNumber,
+                        startPos.character,
+                        endPos.character
+                      )
+                    );
+                  }
                 }
               }
             }
-          }
+          });
 
           if (setToList) {
             diagnosticCollection.set(document.uri, diagnostics);

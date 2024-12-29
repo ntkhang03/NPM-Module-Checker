@@ -87,10 +87,8 @@ function generateFolderCommands(
               if (answer === "Yes") {
                 if (type === "package") {
                   executeCommand(
-                    `npm install ${packagesMissing.join(
-                      " "
-                    )} --prefix ${folderPath.fsPath}`,
-                    undefined,
+                    `npm install ${packagesMissing.join(" ")}`,
+                    folderPath.fsPath,
                     `Installing ${packagesMissing.length} missing packages...`,
                     () =>
                       vscode.window.showInformationMessage(
@@ -115,10 +113,8 @@ function generateFolderCommands(
                 } else {
                   if (packagesMissing.length > 0) {
                     executeCommand(
-                      `npm install ${packagesMissing.join(
-                        " "
-                      )} --prefix ${folderPath.fsPath}`,
-                      undefined,
+                      `npm install ${packagesMissing.join(" ")}`,
+                      folderPath.fsPath,
                       `Installing ${packagesMissing.length} missing packages...`,
                       () =>
                         vscode.window.showInformationMessage(

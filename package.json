@@ -2,7 +2,7 @@
 	"name": "npm-module-checker",
 	"displayName": "NPM Module Checker",
 	"description": "A VSCode extension to check and fix missing npm packages or modules/files in your project.",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"publisher": "ntkhang03",
 	"engines": {
 		"vscode": "^1.75.0"
@@ -98,22 +98,22 @@
 			"explorer/context": [
 				{
 					"command": "npm-module-checker.scanMissingPackagesInFolder",
-					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || resourceLangId == vue || explorerResourceIsFolder",
 					"group": "npm-module-checker"
 				},
 				{
 					"command": "npm-module-checker.scanMissingModulesInFolder",
-					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || resourceLangId == vue || explorerResourceIsFolder",
 					"group": "npm-module-checker"
 				},
 				{
 					"command": "npm-module-checker.scanMissingPackagesAndModulesInFolder",
-					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || resourceLangId == vue || explorerResourceIsFolder",
 					"group": "npm-module-checker"
 				},
 				{
 					"command": "npm-module-checker.checkUnusedPackages",
-					"when": "resourceLangId == javascript || resourceLangId == typescript || explorerResourceIsFolder",
+					"when": "resourceLangId == javascript || resourceLangId == typescript || resourceLangId == vue || explorerResourceIsFolder",
 					"group": "npm-module-checker"
 				}
 			]
@@ -153,6 +153,11 @@
 					"type": "boolean",
 					"default": true,
 					"markdownDescription": "Enable diagnostics for `TypeScript React` files."
+				},
+				"npmModuleChecker.enableDiagnosticsVue": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Enable diagnostics for `Vue` files."
 				},
 				"npmModuleChecker.delayTimeForCheckDocumentAllTabsCall": {
 					"type": "number",
@@ -245,6 +250,7 @@
 		"onLanguage:typescript",
 		"onLanguage:javascriptreact",
 		"onLanguage:typescriptreact",
+		"onLanguage:vue",
 		"onLanguage:json"
 	],
 	"repository": {

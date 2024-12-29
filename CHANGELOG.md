@@ -1,3 +1,7 @@
+## v1.0.5
+### 🚀 Features
+- Added support for `Vue` language and fixed bugs.
+
 ## v1.0.4
 ### 🚀 Features
 - Added `debounce` to prevent calling `checkDocument` and `checkDocumentAllTabs` functions repeatedly.
