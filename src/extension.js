@@ -130,7 +130,7 @@ function installMissingPackagesFixCommand(document, isGlobal = false) {
     .map((issue) => issue.packageNameOrFilePath);
   const command = isGlobal
     ? `npm install -g ${packages.join(" ")}`
-    : `npm install ${packages.join(" ")}`;
+    : `npm install ${packages.join(" ")} -P`;
 
   const cwd = isGlobal ? undefined : path.dirname(document.fileName);
 

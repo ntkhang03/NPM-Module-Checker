@@ -2,7 +2,7 @@
 	"name": "npm-module-checker",
 	"displayName": "NPM Module Checker",
 	"description": "A VSCode extension to check and fix missing npm packages or modules/files in your project.",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"publisher": "ntkhang03",
 	"engines": {
 		"vscode": "^1.75.0"

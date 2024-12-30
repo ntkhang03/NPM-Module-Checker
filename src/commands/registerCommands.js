@@ -36,7 +36,9 @@ function registerCommands(
     ),
     vscode.commands.registerCommand(
       "npm-module-checker.installPackage",
-      installPackageCommand
+      (packageName, document) => {
+        installPackageCommand(packageName, document, "-P");
+      }
     ),
     vscode.commands.registerCommand(
       "npm-module-checker.installPackageAsDevDependency",
